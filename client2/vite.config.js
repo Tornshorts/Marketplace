@@ -7,7 +7,7 @@ export default defineConfig({
   ],
   server:{
     proxy:{
-        '/api':'https://marketplace-h5x5.onrender.com',
+        '/api':'http://localhost:3000',
     }
   }
 })
