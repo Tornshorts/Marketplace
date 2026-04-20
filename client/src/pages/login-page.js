@@ -1,6 +1,7 @@
 import { LitElement, html } from "lit";
 
 class LoginPage extends LitElement{
+  //Disable Shadow DOM styles apply globally
     createRenderRoot(){return this;}
 
     static properties ={
@@ -10,6 +11,7 @@ class LoginPage extends LitElement{
         loading:{type: Boolean},
     };
 
+    // Reactive properties
     constructor(){
         super();
         this.name='';
@@ -18,57 +20,66 @@ class LoginPage extends LitElement{
         this.loading=false;
     }
 
+
+    // Handle login logic
     async handleLogin(){
         if(!this.name || !this.password){
             this.error='Please fill in both fields';
             return;
         }
+
+        // Reset error and show loading state
         this.error = '';
         this.loading = true;
 
         try{
+          // Send login request to backend API
             const res = await fetch('/api/users/login',{
                 method:'POST',
                 headers:{'Content-Type':'application/json'},
                 body:JSON.stringify({name: this.name, password: this.password}),
             });
 
+            // Parse response data
             const data = await res.json();
             if(!res.ok) throw new Error(data.error || data.message || 'Login failed');
             
+            // Emit custom event on successful login
             this.dispatchEvent(new CustomEvent('login-success',{
                 bubbles:true, composed:true,
                 detail:{user: data},
             }));
         }
         catch(err){
+          // Show error message if request fails
             this.error = err.message;
         }finally{
+          // Always stop loading state
             this.loading=false;
         }
     }
     
     render() {
       return html`
-        <div class="min-h-screen bg-gray-50 flex items-center justify-center p-4 font-sans">
-          <div class="max-w-md w-full bg-white rounded-xl shadow-md p-8 border border-gray-100">
-            <div class="text-center mb-8">
-              <h2 class="text-3xl font-extrabold text-gray-900 mb-2">Marketplace Login</h2>
-              <p class="text-sm text-gray-500">Sign in to access your items and chat</p>
+        <div class="min-h-screen bg-white flex items-center justify-center p-4 font-sans">
+          <div class="max-w-md w-full bg-white border border-black p-10 shadow-[12px_12px_0px_0px_#000] transition-all hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[16px_16px_0px_0px_#000]">
+            <div class="mb-8 border-b border-black pb-4">
+              <h2 class="text-4xl font-black text-black mb-1 uppercase tracking-tighter">Marketplace Login</h2>
+              <p class="text-sm font-bold text-black uppercase tracking-widest">Sign in to access your items and chat</p>
             </div>
 
             ${this.error ? html`
-              <div class="mb-6 bg-red-50 text-red-600 px-4 py-3 rounded-2xl text-sm text-center font-medium">
+              <div class="mb-6 bg-black border border-black text-white px-4 py-3 text-sm font-bold uppercase tracking-wider animate-bounce">
                 ${this.error}
               </div>
             ` : ''}
 
             <div class="space-y-6">
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Username</label>
+              <div class="group">
+                <label class="block text-xs font-black text-black uppercase tracking-widest mb-2 group-focus-within:text-fuchsia-600 transition-colors">Username</label>
                 <input
                   type="text"
-                  class="w-full px-5 py-3.5 bg-gray-50 rounded-2xl border-0 focus:ring-2 focus:ring-green-300 focus:bg-white outline-none transition text-sm"
+                  class="w-full px-5 py-4 bg-white border border-black focus:outline-none focus:-translate-y-1 focus:-translate-x-1 focus:shadow-[6px_6px_0px_0px_#000] transition-all text-black font-bold placeholder-gray-300 rounded-none"
                   placeholder="Enter your username"
                   .value=${this.name}
                   @input=${e => this.name = e.target.value}
@@ -76,11 +87,11 @@ class LoginPage extends LitElement{
                 />
               </div>
 
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Password</label>
+              <div class="group">
+                <label class="block text-xs font-black text-black uppercase tracking-widest mb-2 group-focus-within:text-fuchsia-600 transition-colors">Password</label>
                 <input
                   type="password"
-                  class="w-full px-5 py-3.5 bg-gray-50 rounded-2xl border-0 focus:ring-2 focus:ring-purple-300 focus:bg-white outline-none transition text-sm"
+                  class="w-full px-5 py-4 bg-white border border-black focus:outline-none focus:-translate-y-1 focus:-translate-x-1 focus:shadow-[6px_6px_0px_0px_#000] transition-all text-black font-bold placeholder-gray-300 rounded-none"
                   placeholder="Enter your password"
                   .value=${this.password}
                   @input=${e => this.password = e.target.value}
@@ -91,14 +102,10 @@ class LoginPage extends LitElement{
               <button
                 @click=${this.handleLogin}
                 ?disabled=${this.loading}
-                class="mt-8 w-full bg-gradient-to-r from-purple-500 to-indigo-400 hover:shadow-lg hover:from-purple-600 hover:to-indigo-500 text-white font-bold py-4 rounded-full disabled:opacity-50 transition duration-300 flex justify-center items-center gap-2"
+                class="mt-8 w-full bg-orange-600 border border-black text-white font-black py-4 disabled:opacity-50 transition-all hover:bg-black hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0px_0px_#000] active:translate-y-0 active:translate-x-0 active:shadow-none flex justify-center items-center gap-2 uppercase tracking-widest text-lg rounded-none shadow-[4px_4px_0px_0px_#000]"
               >
                 ${this.loading ? html`
-                  <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-                  </svg>
-                  Entering...
+                  <span class="animate-pulse">Entering...</span>
                 ` : 'Enter Showroom'}
               </button>
             </div>

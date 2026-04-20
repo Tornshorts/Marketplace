@@ -2,8 +2,10 @@ import { LitElement, html, unsafeCSS } from 'lit';
 
 
 class ChatPanel extends LitElement {
-  createRenderRoot(){return this;}
+  // Disable Shadow DOM styles apply globally
+  createRenderRoot() { return this; }
 
+  // Reactive properties
   static properties = {
     item:      { type: Object },
     user:      { type: Object },
@@ -13,6 +15,7 @@ class ChatPanel extends LitElement {
     error:     { type: String },
   };
 
+  // Initialize default states
   constructor() {
     super();
     this.messages      = [];
@@ -23,6 +26,7 @@ class ChatPanel extends LitElement {
     this._lastTs       = '1970-01-01T00:00:00.000Z';
   }
 
+  // Lifecycle: fetch messages and start polling
   connectedCallback() {
     super.connectedCallback();
     this.loadMessages();                          // load history
@@ -31,12 +35,14 @@ class ChatPanel extends LitElement {
     }, 3000);
   }
 
+  // Teardown: stop polling when closed
   disconnectedCallback() {
     super.disconnectedCallback();
     clearInterval(this._pollInterval);           // stop polling on close
   }
 
   // Load full history on open
+  // Retrieve messages from the backend chat API
   async loadMessages() {
     this.loading = true;
     try {
@@ -120,56 +126,57 @@ class ChatPanel extends LitElement {
     }));
   }
 
+  // Main layout render mapping
   render() {
     return html`
       <!-- Backdrop -->
-      <div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center sm:px-4"
+      <div class="fixed inset-0 bg-black/80 z-[60] flex items-end sm:items-center justify-center sm:px-4"
         @click=${e => e.target === e.currentTarget && this.close()}
       >
         <!-- Panel -->
-        <div class="bg-white w-full sm:max-w-md sm:rounded-[2rem] rounded-t-[2rem] shadow-2xl flex flex-col h-[80vh] sm:h-[75vh] z-[70] overflow-hidden">
+        <div class="bg-white w-full sm:max-w-md border border-black flex flex-col h-[80vh] sm:h-[75vh] z-[70] rounded-none shadow-none">
 
           <!-- Header -->
-          <div class="bg-white px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-lg">💭</div>
+          <div class="bg-white px-6 py-4 border-b border-black flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 border border-black bg-white flex items-center justify-center text-lg rounded-none shadow-none">💭</div>
               <div>
-                <p class="font-extrabold text-gray-900 text-sm tracking-tight truncate max-w-[200px]">${this.item?.name}</p>
+                <p class="font-black text-black text-sm uppercase tracking-tighter truncate max-w-[200px]">${this.item?.name}</p>
                 <div class="flex items-center gap-1.5 mt-0.5">
-                  <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                  <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Live Chat</p>
+                  <span class="w-2 h-2 bg-emerald-700 animate-pulse border border-black"></span>
+                  <p class="text-[10px] uppercase font-black text-black tracking-widest">Live Chat</p>
                 </div>
               </div>
             </div>
-            <button @click=${this.close} class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 hover:bg-gray-100 text-gray-500 transition-colors">✕</button>
+            <button @click=${this.close} class="w-8 h-8 flex items-center justify-center border border-black bg-white hover:bg-black hover:text-white text-black transition-all rounded-none font-bold hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[2px_2px_0px_0px_#000] active:translate-y-0 active:translate-x-0 active:shadow-none">✕</button>
           </div>
 
           <!-- Messages -->
-          <div id="msg-box" class="flex-1 overflow-y-auto px-5 py-6 flex flex-col gap-4 bg-gray-50/50">
+          <div id="msg-box" class="flex-1 overflow-y-auto px-5 py-6 flex flex-col gap-6 bg-white border-b border-black">
 
             ${this.loading ? html`
               <div class="flex justify-center mt-10">
-                <svg class="animate-spin h-6 w-6 text-purple-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+                <span class="text-black font-black uppercase tracking-widest animate-pulse">Loading...</span>
               </div>
             ` : this.messages.length === 0 ? html`
-              <div class="text-center text-gray-400 text-sm mt-10 font-medium">
+              <div class="text-center text-black border border-black p-4 text-xs mt-10 font-black uppercase tracking-widest bg-white">
                 No messages yet. Send a message to the seller!
               </div>
             ` : this.messages.map(msg => {
               const isMe = msg.senderId === this.user.id;
               return html`
                 <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
-                  <div class="max-w-[75%]">
+                  <div class="max-w-[85%]">
                     ${!isMe ? html`
-                      <p class="text-[10px] font-bold text-gray-400 mb-1 ml-1 uppercase tracking-wider">${msg.senderName ?? 'User'}</p>
+                      <p class="text-[10px] font-black text-black mb-1 ml-1 uppercase tracking-widest">${msg.senderName ?? 'User'}</p>
                     ` : ''}
-                    <div class="px-5 py-3 rounded-[1.25rem] text-sm shadow-sm
+                    <div class="px-5 py-3 border border-black text-sm font-bold uppercase tracking-wider
                       ${isMe
-                        ? 'bg-gradient-to-r from-purple-500 to-indigo-400 text-white rounded-br-sm'
-                        : 'bg-white border border-gray-100 text-gray-800 rounded-bl-sm'}">
+                        ? 'bg-fuchsia-600 text-white rounded-none -mb-1'
+                        : 'bg-white text-black rounded-none'}">
                       ${msg.content}
                     </div>
-                    <p class="text-[10px] text-gray-400 mt-1.5 font-medium ${isMe ? 'text-right mr-2' : 'ml-2'}">
+                    <p class="text-[10px] text-gray-500 mt-2 font-bold uppercase tracking-widest ${isMe ? 'text-right mr-2' : 'ml-2'}">
                       ${new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
@@ -180,25 +187,25 @@ class ChatPanel extends LitElement {
 
           <!-- Error -->
           ${this.error ? html`
-            <div class="px-4 py-2 bg-red-50 text-red-500 font-medium text-xs text-center border-t border-red-100">⚠️ ${this.error}</div>
+            <div class="px-4 py-3 bg-white text-black font-black text-xs text-center border-b border-black uppercase tracking-widest">⚠️ ${this.error}</div>
           ` : ''}
 
           <!-- Input -->
-          <div class="px-5 py-4 bg-white border-t border-gray-100 flex gap-3 items-center">
+          <div class="px-5 py-4 bg-white flex gap-3 items-center">
             <input
               type="text"
-              placeholder="Type your message..."
+              placeholder="TYPE YOUR MESSAGE..."
               .value=${this.text}
               @input=${e => this.text = e.target.value}
               @keydown=${e => e.key === 'Enter' && this.sendMessage()}
-              class="flex-1 bg-gray-50 border-0 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:bg-white transition font-medium"
+              class="flex-1 bg-white border border-black rounded-none px-5 py-3 text-sm focus:outline-none focus:-translate-y-0.5 focus:-translate-x-0.5 focus:shadow-[4px_4px_0px_0px_#000] transition-all font-bold text-black uppercase placeholder-gray-400"
             />
             <button
               @click=${this.sendMessage}
               ?disabled=${!this.text.trim()}
-              class="w-11 h-11 rounded-full flex items-center justify-center bg-purple-600 hover:bg-purple-700 disabled:opacity-40 text-white shadow-sm hover:shadow-md transition shrink-0"
+              class="w-12 h-12 rounded-none border border-black flex items-center justify-center bg-black disabled:opacity-40 text-white transition-all shrink-0 hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[4px_4px_0px_0px_#000] active:translate-y-0 active:translate-x-0 active:shadow-none"
             >
-              <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
             </button>
           </div>
 
